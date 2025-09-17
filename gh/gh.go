@@ -14,6 +14,8 @@ import (
 
 	"github.com/cli/go-gh/v2"
 	"github.com/cli/go-gh/v2/pkg/api"
+
+	"github.com/femnad/rgh/internal"
 )
 
 const (
@@ -49,19 +51,6 @@ type workflowRunsResp struct {
 	} `json:"workflow_runs"`
 }
 
-type Options struct {
-	Print bool
-	Open  bool
-	Watch bool
-}
-
-type RunSpec struct {
-	Inputs   map[string]string
-	Ref      string
-	Repo     string
-	Workflow string
-}
-
 func findMatchingWorkflow(client *api.RESTClient, repo string) (string, error) {
 	apiPath := fmt.Sprintf("repos/%s/actions/workflows", repo)
 	var resp workflowListResp
@@ -83,7 +72,7 @@ func findMatchingWorkflow(client *api.RESTClient, repo string) (string, error) {
 	return "", errors.New("unable to find matching workflow")
 }
 
-func Run(ctx context.Context, spec RunSpec, options Options) error {
+func Run(ctx context.Context, options internal.Options, spec internal.RunSpec) error {
 	client, err := api.DefaultRESTClient()
 	if err != nil {
 		return err

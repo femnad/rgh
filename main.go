@@ -6,12 +6,15 @@ import (
 
 	"github.com/alexflint/go-arg"
 	"github.com/femnad/rgh/gh"
+	"github.com/femnad/rgh/internal"
 	"github.com/femnad/rgh/run"
 )
 
 var args struct {
+	Commit   bool              `arg:"-c,--commit"`
 	Inputs   map[string]string `arg:"-i,--inputs"`
 	Open     bool              `arg:"-o,--open"`
+	Push     bool              `arg:"-p,--push"`
 	Print    bool              `arg:"-p,--print"`
 	Ref      string            `arg:"-e,--ref"`
 	Repo     string            `arg:"-r,--repo"`
@@ -21,17 +24,21 @@ var args struct {
 
 func runWorkflow() error {
 	arg.MustParse(&args)
-	spec, err := run.GetRunSpec(args.Repo, args.Ref, args.Workflow, args.Inputs)
+
+	opts := internal.Options{
+		Commit: args.Commit,
+		Open:   args.Open,
+		Print:  args.Print,
+		Push:   args.Push,
+		Watch:  args.Watch,
+	}
+
+	runSpec, err := run.GetSpec(opts, args.Repo, args.Ref, args.Workflow, args.Inputs)
 	if err != nil {
 		return err
 	}
 
-	opt := gh.Options{
-		Open:  args.Open,
-		Print: args.Print,
-		Watch: args.Watch,
-	}
-	return gh.Run(context.Background(), spec, opt)
+	return gh.Run(context.Background(), opts, runSpec)
 }
 
 func main() {
